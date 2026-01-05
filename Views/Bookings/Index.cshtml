@@ -1,0 +1,72 @@
+@model IEnumerable<SecureBookingSystem.Models.Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <h1 class="font-weight-bold text-primary-gradient">My Bookings</h1>
+    @if (!User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>New Booking
+        </a>
+    }
+</div>
+
+<div class="row">
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center mt-5 fade-in">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No bookings found.</h4>
+            <p>Ready to start? Create your first booking now!</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4 fade-in">
+                <div class="card h-100 border-0 shadow-sm">
+                    @if (item.Room != null && !string.IsNullOrEmpty(item.Room.ImagePath))
+                    {
+                        <img src="@Url.Action("GetRoomImage", "Admin", new { fileName = item.Room.ImagePath })" 
+                             class="card-img-top" style="height: 140px; object-fit: cover;" alt="@item.Room?.Name">
+                    }
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 font-weight-bold">@(item.Room?.Name ?? "Room")</h5>
+                        <span class="badge badge-pill @(item.Status == "Confirmed" ? "badge-success" : item.Status == "Cancelled" ? "badge-danger" : "badge-warning")">
+                            @Html.DisplayFor(modelItem => item.Status)
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-1">@item.Room?.RoomType</p>
+                        <p class="mb-2">
+                            <i class="fas fa-sign-in-alt mr-1 text-success"></i> 
+                            <strong>Check-in:</strong> @item.BookingDate.ToString("MMM dd, yyyy")
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-sign-out-alt mr-1 text-danger"></i> 
+                            <strong>Check-out:</strong> @item.CheckOutDate.ToString("MMM dd, yyyy")
+                        </p>
+                        @if (!string.IsNullOrEmpty(item.ServiceType))
+                        {
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-comment mr-1"></i> @item.ServiceType
+                            </p>
+                        }
+                    </div>
+                    <div class="card-footer bg-white border-0 text-right">
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary mr-2">Edit</a>
+                        }
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info mr-2">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,105 @@
+@model IEnumerable<SecureBookingSystem.Models.ViewModels.UserViewModel>
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <div>
+        <h1 class="font-weight-bold text-primary-gradient mb-1">Manage Users</h1>
+        <p class="text-muted">View and manage registered users.</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle mr-2"></i>@TempData["Error"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<div class="card shadow-md border-0 fade-in">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="border-top-0 pl-4">Email</th>
+                        <th class="border-top-0">Email Confirmed</th>
+                        <th class="border-top-0">Role</th>
+                        <th class="border-top-0">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null)
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="pl-4">
+                                    <i class="fas fa-user-circle mr-2 text-muted"></i>
+                                    @item.Email
+                                </td>
+                                <td>
+                                    @if (item.EmailConfirmed)
+                                    {
+                                        <span class="badge badge-success badge-pill">Confirmed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning badge-pill">Pending</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.IsAdmin)
+                                    {
+                                        <span class="badge badge-primary badge-pill">Admin</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary badge-pill">User</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!item.IsAdmin)
+                                    {
+                                        <form asp-action="DeleteUser" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user? All their bookings will also be deleted.');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">Delete</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Protected</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="text-center mt-5 fade-in">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No users found.</h4>
+    </div>
+}

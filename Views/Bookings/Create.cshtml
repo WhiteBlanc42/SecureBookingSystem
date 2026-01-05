@@ -1,0 +1,173 @@
+@model SecureBookingSystem.Models.Booking
+
+@{
+    ViewData["Title"] = "Book a Room";
+    var rooms = ViewBag.Rooms as List<SecureBookingSystem.Models.Room>;
+}
+
+<div class="fade-in">
+    <h1 class="font-weight-bold text-primary-gradient mb-1">Book a Room</h1>
+    <p class="text-muted mb-4">Select a room and choose your dates.</p>
+</div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <h4 class="mb-3"><i class="fas fa-bed mr-2"></i>Select a Room</h4>
+    
+    @if (rooms == null || !rooms.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle mr-2"></i>No rooms available at the moment. Please check back later.
+        </div>
+    }
+    else
+    {
+        <div class="row mb-4">
+            @foreach (var room in rooms)
+            {
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100 border-0 shadow-sm room-card" 
+                         onclick="selectRoom(@room.Id, this)"
+                         data-room-name="@room.Name"
+                         data-room-type="@room.RoomType"
+                         data-room-price="@room.PricePerNight"
+                         style="cursor: pointer;">
+                        @if (!string.IsNullOrEmpty(room.ImagePath))
+                        {
+                            <img src="@Url.Action("GetRoomImage", "Admin", new { fileName = room.ImagePath })" 
+                                 class="card-img-top" style="height: 150px; object-fit: cover;" alt="@room.Name">
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="fas fa-image fa-2x text-muted"></i>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title font-weight-bold mb-1">@room.Name</h5>
+                            <p class="text-muted small mb-2">@room.RoomType &bull; Max @room.MaxGuests guests</p>
+                            <h5 class="text-primary-gradient font-weight-bold mb-0">
+                                $@room.PricePerNight<small class="text-muted font-weight-normal">/night</small>
+                            </h5>
+                        </div>
+                        <div class="card-footer bg-white border-0 text-center">
+                            <span class="selected-indicator text-success" style="display: none;">
+                                <i class="fas fa-check-circle mr-1"></i>Selected
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <input type="hidden" asp-for="RoomId" id="selectedRoomId" />
+        <span asp-validation-for="RoomId" class="text-danger"></span>
+    }
+
+    <hr class="my-4">
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-calendar-alt mr-2"></i>Booking Dates</h5>
+                    
+                    <div class="form-group">
+                        <label asp-for="BookingDate" class="font-weight-bold"></label>
+                        <input asp-for="BookingDate" class="form-control form-control-lg" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="BookingDate" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="CheckOutDate" class="font-weight-bold"></label>
+                        <input asp-for="CheckOutDate" class="form-control form-control-lg" type="date" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="CheckOutDate" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="ServiceType" class="font-weight-bold">Special Requests (Optional)</label>
+                        <textarea asp-for="ServiceType" class="form-control" rows="2" placeholder="Any special requests? (e.g., late check-in, extra pillows)"></textarea>
+                        <span asp-validation-for="ServiceType" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-receipt mr-2"></i>Booking Summary</h5>
+                    <div id="bookingSummary">
+                        <p class="text-muted">Select a room to see the summary.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group mt-4">
+        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+            <i class="fas fa-check mr-2"></i>Confirm Booking
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-lg ml-2">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function selectRoom(roomId, cardElement) {
+            // Remove previous selection
+            document.querySelectorAll('.room-card').forEach(function(c) {
+                c.classList.remove('border', 'border-primary');
+                var indicator = c.querySelector('.selected-indicator');
+                if (indicator) indicator.style.display = 'none';
+            });
+            
+            // Mark new selection
+            cardElement.classList.add('border', 'border-primary');
+            var indicator = cardElement.querySelector('.selected-indicator');
+            if (indicator) indicator.style.display = 'block';
+            
+            document.getElementById('selectedRoomId').value = roomId;
+            document.getElementById('submitBtn').disabled = false;
+            
+            // Update summary from data attributes
+            var roomName = cardElement.getAttribute('data-room-name');
+            var roomType = cardElement.getAttribute('data-room-type');
+            var roomPrice = cardElement.getAttribute('data-room-price');
+            
+            var html = '<p><strong>Room:</strong> ' + roomName + '</p>';
+            html += '<p><strong>Type:</strong> ' + roomType + '</p>';
+            html += '<p><strong>Price:</strong> $' + roomPrice + '/night</p>';
+            document.getElementById('bookingSummary').innerHTML = html;
+        }
+
+        // Date validation
+        var checkInInput = document.querySelector('input[name="BookingDate"]');
+        if (checkInInput) {
+            checkInInput.addEventListener('change', function() {
+                var checkOut = document.querySelector('input[name="CheckOutDate"]');
+                if (checkOut) {
+                    checkOut.min = this.value;
+                    if (checkOut.value && checkOut.value <= this.value) {
+                        checkOut.value = '';
+                    }
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    .room-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transition: all 0.3s ease;
+    }
+    .room-card.border-primary {
+        border-width: 3px !important;
+    }
+</style>

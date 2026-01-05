@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="jumbotron text-center bg-white">
+    <h1 class="display-3 font-weight-bold text-primary-gradient">Secure Booking System</h1>
+    <p class="lead text-muted">A modern, secure, and reliable platform for all your booking needs.</p>
+    <a class="btn btn-primary btn-lg mt-4" asp-controller="Bookings" asp-action="Create" role="button">
+        <i class="fas fa-calendar-check mr-2"></i>Book Now
+    </a>
+</div>
+
+<div class="row text-center mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4">
+            <div class="card-body">
+                <i class="fas fa-lock fa-3x text-primary mb-3"></i>
+                <h4 class="card-title">Top Security</h4>
+                <p class="card-text">Your data is protected with industry-standard encryption and security practices.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4">
+            <div class="card-body">
+                <i class="fas fa-bolt fa-3x text-secondary mb-3"></i>
+                <h4 class="card-title">Fast & Easy</h4>
+                <p class="card-text">Experience a seamless booking process with our blazing fast interface.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4">
+            <div class="card-body">
+                <i class="fas fa-user-shield fa-3x text-accent mb-3" style="color: var(--accent-color)"></i>
+                <h4 class="card-title">Privacy Focused</h4>
+                <p class="card-text">We value your privacy and ensure your personal information is never compromised.</p>
+            </div>
+        </div>
+    </div>
+</div>
